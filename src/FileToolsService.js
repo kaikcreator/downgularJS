@@ -4,7 +4,7 @@ angular.module('downgularJS')
 /**
  * A service that creates a FileTools object, with methods related with file manipulation
  */
-.factory("FileTools", ['$rootScope', function($rootScope) {
+.factory("FileTools", ['$rootScope', '$q', function($rootScope, $q) {
 	
 
 	/**
@@ -35,6 +35,26 @@ angular.module('downgularJS')
 	       console.log('Error: ' + msg);
 	       return msg;
 	};
+
+    var getFileSystemEntry = function(){
+        var deferred = $q.defer();
+        var promise = deferred.promise;
+
+        if(window.fileSystemEntry !== undefined){
+            deferred.resolve(window.fileSystemEntry);
+        }
+        else{
+            try{
+                window.fileSystemEntry.getDirectory(directory, {create : true, exclusive: false},
+                onSuccess, onFail);
+            }
+            catch(error){
+                deferred.reject(error);
+            }             
+        }
+
+        return promise;
+    }
 	
 	
 	var FileTools = {};
