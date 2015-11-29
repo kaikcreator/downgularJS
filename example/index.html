@@ -10,11 +10,11 @@
   <body>
     <div class="container" ng-app="myApp" ng-controller="main">
 
-      <div>
-        <button ng-click="init()">Put images to download</button>
-        <button ng-click="startStop()">{{view.downloadsStarted ? 'Stop' : 'Start'}}</button>
-        <button ng-click="save()">Save to local storage</button>
-        <button ng-click="retrieve()">Retrieve from local storage</button>
+      <div class="buttons">
+        <button class="action-button shadow animate blue" ng-click="init()">Put images to download</button>
+        <button class="action-button shadow animate red" ng-click="startStop()">{{view.downloadsStarted ? 'Stop' : 'Start'}}</button>
+        <button class="action-button shadow animate green" ng-click="save()">Save to local storage</button>
+        <button class="action-button shadow animate yellow" ng-click="retrieve()">Retrieve from local storage</button>
       </div>
        <img ng-repeat="image in view.images" ng-src="{{image}}" style="width:200px;"></img>
 

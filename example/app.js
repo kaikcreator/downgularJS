@@ -2,13 +2,14 @@
 angular.module("myApp", ["downgularJS"])
 
 .config( [
-    '$compileProvider',
-    function( $compileProvider ) {
+    '$compileProvider', '$httpProvider',
+    function( $compileProvider, $httpProvider ) {
+        //allow images to be loaded from filesystem
         $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|file|blob|filesystem):|data:image\//);
     }
 ])
 
-  .controller("main", ['$scope', 'downgularQueue', function($scope, downgularQueue) {
+  .controller("main", ['$scope', 'downgularQueue', 'FileTools', function($scope, downgularQueue, FileTools) {
   
       var imagesQueue;
       var imageURLs = ["http://critterbabies.com/wp-content/gallery/kittens/803864926_1375572583.jpg",
@@ -29,6 +30,7 @@ angular.module("myApp", ["downgularJS"])
 
       var updateViewImages = function(fileDownload){
         $scope.view.images.push(fileDownload.fileUrl);
+        $scope.$apply();
       }
 
       $scope.startStop = function(){
@@ -61,7 +63,14 @@ angular.module("myApp", ["downgularJS"])
         imagesQueue.loadFileDownloads();
 
       });
-
+      
+      
+      FileTools.getFileSystemEntry().then(function(fileEntry){
+            console.log("file entry: " + fileEntry);
+        }, function(error){
+            console.log("error with file entry: " + error);
+            
+        });
 
 
 
