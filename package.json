@@ -1,0 +1,40 @@
+{
+  "name": "downgularjs",
+  "version": "1.0.0",
+  "description": "Angular Library for downloading files and storing them locally",
+  "main": "dist/downgular.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-jshint": "^2.0.0",
+    "jshint": "^2.8.0",
+    "jshint-stylish": "^2.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaikcreator/downgularJS.git"
+  },
+  "keywords": [
+    "angularJS",
+    "downloads",
+    "files",
+    "download",
+    "files",
+    "downloader",
+    "file",
+    "system"
+  ],
+  "author": "Enrique Oriol",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kaikcreator/downgularJS/issues"
+  },
+  "homepage": "https://github.com/kaikcreator/downgularJS#readme"
+}
