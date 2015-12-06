@@ -73,11 +73,11 @@ angular.module('downgularJS')
 
                         //Using TEMPORARY to make it work!!
                         window.requestFileSystem(window.TEMPORARY, 20*1024*1024, fileSystemSuccess, fileSystemFail);
-                        // navigator.webkitPersistentStorage.requestQuota(20*1024*1024, function(grantedBytes) {
-                        //     window.requestFileSystem(window.PERSISTENT, grantedBytes, fileSystemSuccess, fail);
-                        // }, function(e) {
-                        //     console.log('Error', e);
-                        // });
+/*                         navigator.webkitPersistentStorage.requestQuota(20*1024*1024, function(grantedBytes) {
+                             window.requestFileSystem(window.PERSISTENT, grantedBytes, fileSystemSuccess, fail);
+                         }, function(e) {
+                             console.log('Error', e);
+                         });*/
                     }
                 }
                 catch(error){

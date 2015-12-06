@@ -6,9 +6,11 @@ describe('FileTools tests', function(){
     
 
     var FileTools;
+    var $rootScope;
     
-    beforeEach(inject(function (_FileTools_) {
+    beforeEach(inject(function (_FileTools_, _$rootScope_) {
                 FileTools = _FileTools_;
+                $rootScope = _$rootScope_;
             }));
     
     
@@ -22,6 +24,9 @@ describe('FileTools tests', function(){
             fail("unexpected error when retrieving fileSystem " + error);
             
         });
+        
+        //force promise to get executed
+        setInterval($rootScope.$digest, 100);
         
     });
 
