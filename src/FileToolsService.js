@@ -2,9 +2,52 @@ angular.module('downgularJS')
 
 
 /**
- * A service that creates a FileTools object, with methods related with file manipulation
+ * A provider that creates a FileTools object, with methods related with file manipulation
+ * The provider has the userPersistentMemory and setStorageQuota methods, to allow configuration
+ * of storage properties
  */
-    .factory("FileTools", ['$rootScope', '$q', function($rootScope, $q) {
+    .provider("FileTools", function FileToolsProvider(){
+
+    var storageType, storageQuota;
+    if(window.cordova){
+        storageType = LocalFileSystem.TEMPORARY;
+        storageQuota = 0;
+    }
+    else{
+        storageType = window.TEMPORARY;
+        storageQuota = 20*1024*1024;
+    }
+
+    this.usePersistentMemory = function(permanent){
+        if(permanent === true){
+            if(window.cordova){
+                storageType = LocalFileSystem.PERSISTENT;
+            }
+            else{
+                storageType = window.PERSISTENT;
+            }
+        }
+        else{
+            if(window.cordova){
+                storageType = LocalFileSystem.TEMPORARY;
+            }
+            else{
+                storageType = window.TEMPORARY;
+            }
+        }
+    };
+
+    this.setStorageQuota = function(quota){
+        if(!angular.isNumber(quota))
+            return;
+
+        storageQuota = quota;
+    };
+
+
+
+
+    this.$get = ['$rootScope', '$q', function($rootScope, $q) {
 
 
         /**
@@ -59,25 +102,27 @@ angular.module('downgularJS')
                 deferred.resolve(window.fileSystemEntry);
             }
             else{
+                //initialize file system and get fileSystemEntry on success.
                 try{
                     if(window.cordova){
                         console.log("init persistent file system in device");
                         //if it's an app is running in the device, do normal setup
-                        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, fileSystemSuccess, fileSystemFail);
+                        window.requestFileSystem(storageType, storageQuota, fileSystemSuccess, fileSystemFail);
                     }
                     else{
                         //if the app is running in browser, request storage quota and init for chrome (is the only one that provides FileSystem API)
-                        console.log("init persistent file system in chrome");
+                        console.log("init persistent file system in navigator");
                         window.resolveLocalFileSystemURI = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
                         window.requestFileSystem  = window.webkitRequestFileSystem;  
-
-                        //Using TEMPORARY to make it work!!
-                        window.requestFileSystem(window.TEMPORARY, 20*1024*1024, fileSystemSuccess, fileSystemFail);
-/*                         navigator.webkitPersistentStorage.requestQuota(20*1024*1024, function(grantedBytes) {
-                             window.requestFileSystem(window.PERSISTENT, grantedBytes, fileSystemSuccess, fail);
-                         }, function(e) {
-                             console.log('Error', e);
-                         });*/
+                        if(storageType === window.TEMPORARY)
+                            window.requestFileSystem(storageType, storageQuota, fileSystemSuccess, fileSystemFail);
+                        else{
+                            navigator.webkitPersistentStorage.requestQuota(storageQuota, function(grantedBytes) {
+                                window.requestFileSystem(storageType, grantedBytes, fileSystemSuccess, fail);
+                            }, function(e) {
+                                console.log('Error', e);
+                            });
+                        }
                     }
                 }
                 catch(error){
@@ -245,39 +290,13 @@ angular.module('downgularJS')
         };
 
 
-        //request the persistent file system, on document ready
-        // angular.element(document).ready(function (){
-        function fileSystemSuccess(fileSystem) {
-            var entry=fileSystem.root; 
-            window.fileSystemEntry = entry;
-        }
-        function fileSystemFail(error) {
-            console.log(error.message);
-        }
-
-        if(window.cordova){
-            console.log("init persistent file system in device");
-            //if it's an app is running in the device, do normal setup
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, fileSystemSuccess, fileSystemFail);
-        }
-        else{
-            //if the app is running in browser, request storage quota and init for chrome (is the only one that provides FileSystem API)
-            console.log("init persistent file system in chrome");
-            window.resolveLocalFileSystemURI = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
-            window.requestFileSystem  = window.webkitRequestFileSystem;  
-
-            //Using TEMPORARY to make it work!!
-            window.requestFileSystem(window.TEMPORARY, 20*1024*1024, fileSystemSuccess, fileSystemFail);
-            // navigator.webkitPersistentStorage.requestQuota(20*1024*1024, function(grantedBytes) {
-            //     window.requestFileSystem(window.PERSISTENT, grantedBytes, fileSystemSuccess, fail);
-            // }, function(e) {
-            //     console.log('Error', e);
-            // });
-        }
-        // });
+        //pre-load file system entry
+        FileTools.getFileSystemEntry();
 
 
         return FileTools;
 
 
-    }]);
+    }];
+
+});
