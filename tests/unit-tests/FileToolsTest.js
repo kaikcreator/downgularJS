@@ -16,9 +16,9 @@ describe('FileTools tests', function(){
     
     // Test 1: Create an object and check that it is defined
     it("get filesystem reference", function(done) {
+        console.log("Test get file system entry");
         FileTools.getFileSystemEntry().then(function(fileEntry){
             expect(fileEntry).toBeDefined();
-            console.log("file entry: " + fileEntry);
             done();
         }, function(error){
             fail("unexpected error when retrieving fileSystem " + error);

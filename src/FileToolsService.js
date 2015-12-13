@@ -15,7 +15,7 @@ angular.module('downgularJS')
     }
     else{
         storageType = window.TEMPORARY;
-        storageQuota = 20*1024*1024;
+        storageQuota = 0;
     }
 
     this.usePersistentMemory = function(permanent){
