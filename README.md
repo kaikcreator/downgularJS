@@ -3,7 +3,7 @@ Angular library for downloading files and storing them locally.
 
 Only Cordova and Chrome have, right now, FileSystem API, so this library is mainly focused in hybrid apps, that can need to download images or other files to the device and store them permantently.
 
-As it follows AngularJS architecture, can be easily integrated with **Ionic Framework**.
+As it follows AngularJS architecture, it can be easily integrated with **Ionic Framework**.
 
 
 **Happy coding!!**
