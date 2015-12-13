@@ -82,7 +82,8 @@ angular.module('downgularJS')
 /**
  * A service that handles an array of FileDownload objects
  */
-.factory('downgularQueue', ['$http', '$q', 'FileDownload', 'GenericTools', 'FileTools','MIMEType', 'downgularJSQueueStatus', 'downgularJSError',
+.factory('downgularQueue', ['$http', '$q', 'FileDownload', 'GenericTools', 'FileTools', 
+    'MIMEType', 'downgularJSQueueStatus', 'downgularJSError',
     function($http, $q, FileDownload, GenericTools, FileTools, MIMEType, 
         downgularJSQueueStatus, downgularJSError) {
 
@@ -340,9 +341,52 @@ angular.module('downgularJS')
 
 
 /**
- * A service that creates a FileTools object, with methods related with file manipulation
+ * A provider that creates a FileTools object, with methods related with file manipulation
+ * The provider has the userPersistentMemory and setStorageQuota methods, to allow configuration
+ * of storage properties
  */
-    .factory("FileTools", ['$rootScope', '$q', function($rootScope, $q) {
+    .provider("FileTools", function FileToolsProvider(){
+
+    var storageType, storageQuota;
+    if(window.cordova){
+        storageType = LocalFileSystem.TEMPORARY;
+        storageQuota = 0;
+    }
+    else{
+        storageType = window.TEMPORARY;
+        storageQuota = 0;
+    }
+
+    this.usePersistentMemory = function(permanent){
+        if(permanent === true){
+            if(window.cordova){
+                storageType = LocalFileSystem.PERSISTENT;
+            }
+            else{
+                storageType = window.PERSISTENT;
+            }
+        }
+        else{
+            if(window.cordova){
+                storageType = LocalFileSystem.TEMPORARY;
+            }
+            else{
+                storageType = window.TEMPORARY;
+            }
+        }
+    };
+
+    this.setStorageQuota = function(quota){
+        if(!angular.isNumber(quota))
+            return;
+
+        storageQuota = quota;
+    };
+
+
+
+
+    this.$get = ['$rootScope', '$q', function($rootScope, $q) {
 
 
         /**
@@ -377,45 +421,47 @@ angular.module('downgularJS')
 
         var FileTools = {};
 
+        var fileSystem = null;
+
 
         FileTools.getFileSystemEntry = function(){
             var deferred = $q.defer();
             var promise = deferred.promise;
 
-            function fileSystemSuccess(fileSystem) {
-                var entry=fileSystem.root; 
-                window.fileSystemEntry = entry;
-                deferred.resolve(window.fileSystemEntry);
+            //if filesystem already exists, resolve promise
+            if(fileSystem !== null){
+                deferred.resolve(fileSystem);
             }
-            function fileSystemFail(error) {
-                console.log(error.message);
-                deferred.reject(error);
-            }
-
-
-            if(window.fileSystemEntry !== undefined){
-                deferred.resolve(window.fileSystemEntry);
-            }
+            //otherwise initialize file system and get fileSystemEntry on success.
             else{
+                var fileSystemSuccess = function(fs) {
+                    fileSystem=fs.root; 
+                    deferred.resolve(fileSystem);
+                };
+                var fileSystemFail = function(error) {
+                    console.log(error.message);
+                    deferred.reject(error);
+                };
                 try{
                     if(window.cordova){
                         console.log("init persistent file system in device");
                         //if it's an app is running in the device, do normal setup
-                        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, fileSystemSuccess, fileSystemFail);
+                        window.requestFileSystem(storageType, storageQuota, fileSystemSuccess, fileSystemFail);
                     }
                     else{
                         //if the app is running in browser, request storage quota and init for chrome (is the only one that provides FileSystem API)
-                        console.log("init persistent file system in chrome");
+                        console.log("init persistent file system in navigator");
                         window.resolveLocalFileSystemURI = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
                         window.requestFileSystem  = window.webkitRequestFileSystem;  
-
-                        //Using TEMPORARY to make it work!!
-                        window.requestFileSystem(window.TEMPORARY, 20*1024*1024, fileSystemSuccess, fileSystemFail);
-                        // navigator.webkitPersistentStorage.requestQuota(20*1024*1024, function(grantedBytes) {
-                        //     window.requestFileSystem(window.PERSISTENT, grantedBytes, fileSystemSuccess, fail);
-                        // }, function(e) {
-                        //     console.log('Error', e);
-                        // });
+                        if(storageType === window.TEMPORARY)
+                            window.requestFileSystem(storageType, storageQuota, fileSystemSuccess, fileSystemFail);
+                        else{
+                            navigator.webkitPersistentStorage.requestQuota(storageQuota, function(grantedBytes) {
+                                window.requestFileSystem(storageType, grantedBytes, fileSystemSuccess, fail);
+                            }, function(e) {
+                                console.log('Error', e);
+                            });
+                        }
                     }
                 }
                 catch(error){
@@ -439,16 +485,13 @@ angular.module('downgularJS')
                 };
 
                 try{
-                    window.resolveLocalFileSystemURI(	fileURI, 
-                                                     function(fileEntry){
+                    window.resolveLocalFileSystemURI(fileURI, function(fileEntry){
                         var successRemoving = function(){};
                         if(onSuccess){ 
                             successRemoving = onSuccess; 
                         }
                         fileEntry.remove(successRemoving, failWithInfo);
-                    },
-                                                     failWithInfo
-                                                    );
+                    },failWithInfo);
                 }
                 catch(e){
                     failWithInfo(e);
@@ -497,12 +540,16 @@ angular.module('downgularJS')
                 };
 
                 //start running the save code
-                try{
-                    window.fileSystemEntry.getDirectory(directory, {create : true, exclusive: false}, getDirectorySuccess, failWithInfo);
-                }
-                catch(error){
-                    failWithInfo(error);
-                }
+
+                FileTools.getFileSystemEntry().then(function(fileSystem){
+                    try{
+                        fileSystem.getDirectory(directory, {create : true, exclusive: false}, getDirectorySuccess, failWithInfo);
+                    }
+                    catch(error){
+                        failWithInfo(error);
+                    }
+                }, failWithInfo);
+
             });
         };
 
@@ -511,26 +558,15 @@ angular.module('downgularJS')
 	 * Public static method that check if a directory exists, and otherwise tries to create it
 	 */
         FileTools.checkOrCreateDirectory = function(directory, onSuccess, onFail){
-            if(window.fileSystemEntry === undefined){
-                $rootScope.$watch(function() {
-                    return window.fileSystemEntry;
-                }, function watchCallback(newValue, oldValue) {
-                    try{
-                        window.fileSystemEntry.getDirectory(directory, {create : true, exclusive: false}, onSuccess, onFail);
-                    }
-                    catch(error){
-                        onFail(error);
-                    } 
-                });
-            }
-            else{
+
+            FileTools.getFileSystemEntry().then(function(fileSystem){
                 try{
-                    window.fileSystemEntry.getDirectory(directory, {create : true, exclusive: false}, onSuccess, onFail);
+                    fileSystem.getDirectory(directory, {create : true, exclusive: false}, onSuccess, onFail);
                 }
                 catch(error){
                     onFail(error);
-                } 
-            }       
+                }
+            }, onFail);
         };
 
 
@@ -583,42 +619,11 @@ angular.module('downgularJS')
         };
 
 
-        //request the persistent file system, on document ready
-        // angular.element(document).ready(function (){
-        function fileSystemSuccess(fileSystem) {
-            var entry=fileSystem.root; 
-            window.fileSystemEntry = entry;
-        }
-        function fileSystemFail(error) {
-            console.log(error.message);
-        }
-
-        if(window.cordova){
-            console.log("init persistent file system in device");
-            //if it's an app is running in the device, do normal setup
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, fileSystemSuccess, fileSystemFail);
-        }
-        else{
-            //if the app is running in browser, request storage quota and init for chrome (is the only one that provides FileSystem API)
-            console.log("init persistent file system in chrome");
-            window.resolveLocalFileSystemURI = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
-            window.requestFileSystem  = window.webkitRequestFileSystem;  
-
-            //Using TEMPORARY to make it work!!
-            window.requestFileSystem(window.TEMPORARY, 20*1024*1024, fileSystemSuccess, fileSystemFail);
-            // navigator.webkitPersistentStorage.requestQuota(20*1024*1024, function(grantedBytes) {
-            //     window.requestFileSystem(window.PERSISTENT, grantedBytes, fileSystemSuccess, fail);
-            // }, function(e) {
-            //     console.log('Error', e);
-            // });
-        }
-        // });
-
 
         return FileTools;
 
-
-    }]);
+    }];
+});
 
 angular.module('downgularJS')
 
@@ -626,91 +631,90 @@ angular.module('downgularJS')
 /**
  * A service that return a GenericTools object
  */
-    .factory('GenericTools', [function() {
+    .factory('GenericTools', ['FileTools', function(FileTools) {
 
-    var GenericTools = {};
+        var GenericTools = {};
 
-    GenericTools.onlyCharsSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        GenericTools.onlyCharsSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-    /**
+        /**
 	 * Public static method that creates a random alphanumeric string
 	 */
-    GenericTools.randomAlphaNumericString = function(length, charSet) {
-        var result = [];
+        GenericTools.randomAlphaNumericString = function(length, charSet) {
+            var result = [];
 
-        length = length || 10;
-        charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        charSet = charSet.split("");
+            length = length || 10;
+            charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            charSet = charSet.split("");
 
-        while (--length) {
-            result.push(charSet[Math.floor(Math.random() * charSet.length)]);
-        }
+            while (--length) {
+                result.push(charSet[Math.floor(Math.random() * charSet.length)]);
+            }
 
-        return result.join('');
-    };
+            return result.join('');
+        };
 
-    /**
+        /**
 	 * Public static method that returns an available filename to write in the expected directory
 	 */
-    GenericTools.getValidFilenameInDir = function(dir, length, extension, onSuccess, onFail){
+        GenericTools.getValidFilenameInDir = function(dir, length, extension, onSuccess, onFail){
 
-        //internal methods definition
+            //internal methods definition
 
-        function fail(error) {
-            console.log("Failed to reach directories: " + error.message);
-            onFail(error);
-        }
-
-        function readEntriesSuccess(entries) {
-            var i;
-            var fileNames = [];
-
-            //get the file names in the directory
-            for (i=0; i<entries.length; i++) {
-                fileNames.push(entries[i].name);
+            function fail(error) {
+                console.log("Failed to reach directories: " + error.message);
+                onFail(error);
             }
 
-            //create a random name until it's not in the directory
-            var valid = false;
-            var name;
-            while(!valid){
-                name = GenericTools.randomAlphaNumericString(length) + extension;
-                if(!fileNames[name]){
-                    valid = true;
+            function readEntriesSuccess(entries) {
+                var i;
+                var fileNames = [];
+
+                //get the file names in the directory
+                for (i=0; i<entries.length; i++) {
+                    fileNames.push(entries[i].name);
                 }
+
+                //create a random name until it's not in the directory
+                var valid = false;
+                var name;
+                while(!valid){
+                    name = GenericTools.randomAlphaNumericString(length) + extension;
+                    if(!fileNames[name]){
+                        valid = true;
+                    }
+                }
+
+                onSuccess(name);
             }
 
-            onSuccess(name);
-        }
 
+            function getDirectorySuccess(fileDirectory) {
+                // Get a directory reader
+                var directoryReader = fileDirectory.createReader();
 
-        function getDirectorySuccess(fileDirectory) {
-            // Get a directory reader
-            var directoryReader = fileDirectory.createReader();
-
-            // Get a list of all the entries in the directory
-            directoryReader.readEntries(readEntriesSuccess,fail);
-        }
-
-        //code to execute
-
-        angular.element(document).ready(function (){
-            //try to access dir
-            try{
-                window.fileSystemEntry.getDirectory(dir, {create : true}, getDirectorySuccess, fail);
+                // Get a list of all the entries in the directory
+                directoryReader.readEntries(readEntriesSuccess,fail);
             }
-            catch(error){
-                fail(error);
-            }
-        });
 
-    };
+            //code to execute
+            FileTools.getFileSystemEntry().then(function(fileSystem){
+                //try to access dir
+                try{
+                    fileSystem.getDirectory(dir, {create : true}, getDirectorySuccess, fail);
+                }
+                catch(error){
+                    fail(error);
+                }
+            }, fail);
+
+        };
 
 
 
-    return GenericTools;
+        return GenericTools;
 
-}]);
+    }]);
 
 angular.module('downgularJS')
 

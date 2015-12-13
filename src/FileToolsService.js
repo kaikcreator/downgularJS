@@ -82,27 +82,27 @@ angular.module('downgularJS')
 
         var FileTools = {};
 
+        var fileSystem = null;
+
 
         FileTools.getFileSystemEntry = function(){
             var deferred = $q.defer();
             var promise = deferred.promise;
 
-            function fileSystemSuccess(fileSystem) {
-                var entry=fileSystem.root; 
-                window.fileSystemEntry = entry;
-                deferred.resolve(window.fileSystemEntry);
+            //if filesystem already exists, resolve promise
+            if(fileSystem !== null){
+                deferred.resolve(fileSystem);
             }
-            function fileSystemFail(error) {
-                console.log(error.message);
-                deferred.reject(error);
-            }
-
-
-            if(window.fileSystemEntry !== undefined){
-                deferred.resolve(window.fileSystemEntry);
-            }
+            //otherwise initialize file system and get fileSystemEntry on success.
             else{
-                //initialize file system and get fileSystemEntry on success.
+                var fileSystemSuccess = function(fs) {
+                    fileSystem=fs.root; 
+                    deferred.resolve(fileSystem);
+                };
+                var fileSystemFail = function(error) {
+                    console.log(error.message);
+                    deferred.reject(error);
+                };
                 try{
                     if(window.cordova){
                         console.log("init persistent file system in device");
@@ -146,16 +146,13 @@ angular.module('downgularJS')
                 };
 
                 try{
-                    window.resolveLocalFileSystemURI(	fileURI, 
-                                                     function(fileEntry){
+                    window.resolveLocalFileSystemURI(fileURI, function(fileEntry){
                         var successRemoving = function(){};
                         if(onSuccess){ 
                             successRemoving = onSuccess; 
                         }
                         fileEntry.remove(successRemoving, failWithInfo);
-                    },
-                                                     failWithInfo
-                                                    );
+                    },failWithInfo);
                 }
                 catch(e){
                     failWithInfo(e);
@@ -204,12 +201,16 @@ angular.module('downgularJS')
                 };
 
                 //start running the save code
-                try{
-                    window.fileSystemEntry.getDirectory(directory, {create : true, exclusive: false}, getDirectorySuccess, failWithInfo);
-                }
-                catch(error){
-                    failWithInfo(error);
-                }
+
+                FileTools.getFileSystemEntry().then(function(fileSystem){
+                    try{
+                        fileSystem.getDirectory(directory, {create : true, exclusive: false}, getDirectorySuccess, failWithInfo);
+                    }
+                    catch(error){
+                        failWithInfo(error);
+                    }
+                }, failWithInfo);
+
             });
         };
 
@@ -218,26 +219,15 @@ angular.module('downgularJS')
 	 * Public static method that check if a directory exists, and otherwise tries to create it
 	 */
         FileTools.checkOrCreateDirectory = function(directory, onSuccess, onFail){
-            if(window.fileSystemEntry === undefined){
-                $rootScope.$watch(function() {
-                    return window.fileSystemEntry;
-                }, function watchCallback(newValue, oldValue) {
-                    try{
-                        window.fileSystemEntry.getDirectory(directory, {create : true, exclusive: false}, onSuccess, onFail);
-                    }
-                    catch(error){
-                        onFail(error);
-                    } 
-                });
-            }
-            else{
+
+            FileTools.getFileSystemEntry().then(function(fileSystem){
                 try{
-                    window.fileSystemEntry.getDirectory(directory, {create : true, exclusive: false}, onSuccess, onFail);
+                    fileSystem.getDirectory(directory, {create : true, exclusive: false}, onSuccess, onFail);
                 }
                 catch(error){
                     onFail(error);
-                } 
-            }       
+                }
+            }, onFail);
         };
 
 
@@ -290,13 +280,8 @@ angular.module('downgularJS')
         };
 
 
-        //pre-load file system entry
-        FileTools.getFileSystemEntry();
-
 
         return FileTools;
 
-
     }];
-
 });
