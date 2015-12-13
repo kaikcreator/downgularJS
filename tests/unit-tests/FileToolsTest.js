@@ -1,15 +1,15 @@
-describe('FileTools tests', function(){
+describe('downgularFileTools tests', function(){
     
-    console.log("[TESTING]: Initializing FileTools tests");
+    console.log("[TESTING]: Initializing downgularFileTools tests");
     
     beforeEach(module("downgularJS"));
     
 
-    var FileTools;
+    var downgularFileTools;
     var $rootScope;
     
-    beforeEach(inject(function (_FileTools_, _$rootScope_) {
-                FileTools = _FileTools_;
+    beforeEach(inject(function (_downgularFileTools_, _$rootScope_) {
+                downgularFileTools = _downgularFileTools_;
                 $rootScope = _$rootScope_;
             }));
     
@@ -17,7 +17,7 @@ describe('FileTools tests', function(){
     // Test 1: Create an object and check that it is defined
     it("get filesystem reference", function(done) {
         console.log("Test get file system entry");
-        FileTools.getFileSystemEntry().then(function(fileEntry){
+        downgularFileTools.getFileSystemEntry().then(function(fileEntry){
             expect(fileEntry).toBeDefined();
             done();
         }, function(error){

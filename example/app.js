@@ -2,14 +2,14 @@
 angular.module("myApp", ["downgularJS"])
 
 .config( [
-    '$compileProvider', '$httpProvider', 'FileToolsProvider',
-    function( $compileProvider, $httpProvider, FileToolsProvider ) {
+    '$compileProvider', '$httpProvider', 'downgularFileToolsProvider',
+    function( $compileProvider, $httpProvider, downgularFileToolsProvider ) {
         //allow images to be loaded from filesystem
         $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|file|blob|filesystem):|data:image\//);
         
         /* configure storage details*/
-        FileToolsProvider.usePersistentMemory(true);
-        FileToolsProvider.setStorageQuota(30*1024*1024);
+        downgularFileToolsProvider.usePersistentMemory(true);
+        downgularFileToolsProvider.setStorageQuota(30*1024*1024);
     }
 ])
 

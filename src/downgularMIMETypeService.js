@@ -2,9 +2,9 @@ angular.module('downgularJS')
 
 
 /**
- * A service that return FileDownload objects
+ * A service that return downgularFileDownload objects
  */
-.factory('MIMEType', function () {
+.factory('downgularMIMEType', function () {
 
 var types = {
     'text/html':                             'html',
@@ -72,9 +72,9 @@ var types = {
     'video/mp4':                             'mp4'
 	};
 
-	var MIMETypes = {};
+	var downgularMIMETypes = {};
 
-	MIMETypes.getExtensionFromType = function(type){
+	downgularMIMETypes.getExtensionFromType = function(type){
 		var extension = types[type];
 		if(extension === undefined)
 			return "";
@@ -82,7 +82,7 @@ var types = {
 			return "."+extension;
 	};
 
-	MIMETypes.getTypeFromExtension = function(ext){
+	downgularMIMETypes.getTypeFromExtension = function(ext){
 		for(var key in types){
 			if(types[key] === ext)
 				return key;
@@ -90,6 +90,6 @@ var types = {
 		return "unknown";
 	};
 
-	return MIMETypes;
+	return downgularMIMETypes;
 
  });

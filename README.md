@@ -41,7 +41,7 @@ var myQueue = downgularQueue.build('nameOfTheQueue', 'nameOfFolderToDownloadFile
 
 You can use different queues at the same time (for example, using a quick queue for thumbnails and another queue for big images).
 
-Also, you can define a callback function that will be called when a file is downloaded. The FileDownload model related with that download will be passed as argument. This callback is the perfect place with whatever post-download process you want to do with the file.
+Also, you can define a callback function that will be called when a file is downloaded. The downgularFileDownload model related with that download will be passed as argument. This callback is the perfect place with whatever post-download process you want to do with the file.
 
 
 ## Add files to download
@@ -103,9 +103,9 @@ imagesQueue.loadFileDownloads();
 ```
 
 
-# The FileDownload Model:
+# The downgularFileDownload Model:
 
-Every time a URL is added to a download queue, a **FileDownload** model is created with the following properties:
+Every time a URL is added to a download queue, a **downgularFileDownload** model is created with the following properties:
 
 - info: HERE YOU CAN ADD WHATEVER INFORMATION YOU WANT
 - url: the URL from which the file should be downloaded
@@ -120,14 +120,14 @@ So you can use the **info** property to add whatever metadata you want to that f
 # Configure localStorage for downgularJS:
 By default, downgular sets temporary storage and zero quota (as quota is not required for temp. allocation).
 
-However, you can easily use **FileToolsProvider** to request persistent memory and change the storage quota.
+However, you can easily use **downgularFileToolsProvider** to request persistent memory and change the storage quota.
 Just do the following in the config call of your module:
 
 ```javascript
-.config(function(FileToolsProvider) {
+.config(function(downgularFileToolsProvider) {
         /* configure storage details*/
-        FileToolsProvider.usePersistentMemory(true);
-        FileToolsProvider.setStorageQuota(20*1024*1024); //in order to request 20MB
+        downgularFileToolsProvider.usePersistentMemory(true);
+        downgularFileToolsProvider.setStorageQuota(20*1024*1024); //in order to request 20MB
     }
 ))
 

@@ -3,9 +3,9 @@ angular.module('downgularJS')
 
 
 /**
- * A service that return FileDownload objects
+ * A service that return downgularFileDownload objects
  */
-.factory('FileDownload', function () {
+.factory('downgularFileDownload', function () {
 
 	/**
 	 * Represents a file to download
@@ -14,7 +14,7 @@ angular.module('downgularJS')
 	 * @param {string} url - URL from which the file must be downloaded
 	 * @param {string} fileUrl - internal URL where the file is stored
 	 */
-	function FileDownload(info, url, fileUrl) {
+	function downgularFileDownload(info, url, fileUrl) {
         this.info = info;
         this.url = url;
         this.fileUrl = fileUrl;
@@ -24,13 +24,13 @@ angular.module('downgularJS')
 
 	
 	/**
-	 * Public static method that create new FileDownload objects from data
+	 * Public static method that create new downgularFileDownload objects from data
 	 */
-	FileDownload.build = function(data) {
+	downgularFileDownload.build = function(data) {
 		if(!data)
             return null;
 
-		return new FileDownload(data.info, data.url, data.fileUrl);
+		return new downgularFileDownload(data.info, data.url, data.fileUrl);
 	};
 
     
@@ -39,24 +39,24 @@ angular.module('downgularJS')
 	 * Public method to return object as JSON
 	 */
  
-    FileDownload.prototype.toJson = function(){
+    downgularFileDownload.prototype.toJson = function(){
     	return angular.toJson(this);
     };
     
     
     /**
-	 * Public static method to build FileDownload objects from an array of data
+	 * Public static method to build downgularFileDownload objects from an array of data
 	 */
-    FileDownload.localStorageRetrieverTransformer = function(data){
+    downgularFileDownload.localStorageRetrieverTransformer = function(data){
     	if(angular.isArray(data)){
-    		return data.map(FileDownload.build).filter(Boolean);
+    		return data.map(downgularFileDownload.build).filter(Boolean);
     	}
-    	return FileDownload.build(data);
+    	return downgularFileDownload.build(data);
     };
 
 
   
-    return FileDownload;
+    return downgularFileDownload;
     
 });
 
@@ -80,11 +80,11 @@ angular.module('downgularJS')
 })
 
 /**
- * A service that handles an array of FileDownload objects
+ * A service that handles an array of downgularFileDownload objects
  */
-.factory('downgularQueue', ['$http', '$q', 'FileDownload', 'GenericTools', 'FileTools', 
-    'MIMEType', 'downgularJSQueueStatus', 'downgularJSError',
-    function($http, $q, FileDownload, GenericTools, FileTools, MIMEType, 
+.factory('downgularQueue', ['$http', '$q', 'downgularFileDownload', 'downgularGenericTools', 'downgularFileTools', 
+    'downgularMIMEType', 'downgularJSQueueStatus', 'downgularJSError',
+    function($http, $q, downgularFileDownload, downgularGenericTools, downgularFileTools, downgularMIMEType, 
         downgularJSQueueStatus, downgularJSError) {
 
     /**
@@ -170,7 +170,7 @@ angular.module('downgularJS')
     downgularQueue.prototype.storeFile = function(blobFile){
         
         //Get a valid filename, and on success, save file to disc
-        var extension = MIMEType.getExtensionFromType(blobFile.type);
+        var extension = downgularMIMEType.getExtensionFromType(blobFile.type);
 
         if(!extension){
             //an error has been produced with the downloaded data, unknown extension
@@ -182,18 +182,18 @@ angular.module('downgularJS')
         
         var onValidName = function(name){
             //if name is valid, save file to disc
-            FileTools.saveBinaryToDisc(blobFile, name, this.directory, this.storeSuccesful.bind(this), this.errorStoring.bind(this));
+            downgularFileTools.saveBinaryToDisc(blobFile, name, this.directory, this.storeSuccesful.bind(this), this.errorStoring.bind(this));
         };
         
         var onNameError = function(error){
             console.log("error getting file filename: " + error);
             //create an emergency name
             var name = Date.now().toString() + extension;
-            FileTools.saveBinaryToDisc(blobFile, name, this.directory, this.storeSuccesful.bind(this), this.errorStoring.bind(this));
+            downgularFileTools.saveBinaryToDisc(blobFile, name, this.directory, this.storeSuccesful.bind(this), this.errorStoring.bind(this));
         };
         
         //try to get a valid filename in the current directory
-        GenericTools.getValidFilenameInDir(this.directory, 12, extension, onValidName.bind(this), onNameError.bind(this));
+        downgularGenericTools.getValidFilenameInDir(this.directory, 12, extension, onValidName.bind(this), onNameError.bind(this));
     };
  
     /** method to retry download, you probably won't use this method directly */   
@@ -245,7 +245,7 @@ angular.module('downgularJS')
     /** Public method to add a file to the download queue */
     downgularQueue.prototype.addFileDownload = function(info, url, fileUrl){
         if(url !== null && url !== "")
-            this.downloadsArray.push(FileDownload.build({info:info, url:url, fileUrl:fileUrl}));
+            this.downloadsArray.push(downgularFileDownload.build({info:info, url:url, fileUrl:fileUrl}));
         
         //check if queue is started but not running, in which case, schedule next file to donwload
         if(this.isStarted()){
@@ -258,7 +258,7 @@ angular.module('downgularJS')
     downgularQueue.prototype.addPriorityFileDownload = function(info, url, fileUrl){
         if(url !== null && url !== "")
             //set the file in the position 1 of the array (in case size = 0, splice puts it at pos 0)
-            this.downloadsArray.splice(1, 0, FileDownload.build({info:info, url:url, fileUrl:fileUrl}));
+            this.downloadsArray.splice(1, 0, downgularFileDownload.build({info:info, url:url, fileUrl:fileUrl}));
         
         //check if queue is started but not running, in which case, schedule next file to donwload
         if(this.isStarted()){
@@ -294,7 +294,7 @@ angular.module('downgularJS')
         this.downloadsArray = window.localStorage[this.queueName + 'Queue'];
         if(this.downloadsArray){
             this.downloadsArray = angular.fromJson(this.downloadsArray);
-            this.downloadsArray = FileDownload.localStorageRetrieverTransformer(this.downloadsArray); 
+            this.downloadsArray = downgularFileDownload.localStorageRetrieverTransformer(this.downloadsArray); 
         }
         else
             this.downloadsArray = [];
@@ -327,7 +327,7 @@ angular.module('downgularJS')
 	 */
 	downgularQueue.build = function(name, directory, onSuccess) {
         //try to create directory if it does not exists
-        FileTools.checkOrCreateDirectory(directory, null, function(err){
+        downgularFileTools.checkOrCreateDirectory(directory, null, function(err){
             console.log("Error creating directory " + directory + ", error: " + err);
         });
 		return new downgularQueue(name, directory, onSuccess);
@@ -341,11 +341,11 @@ angular.module('downgularJS')
 
 
 /**
- * A provider that creates a FileTools object, with methods related with file manipulation
+ * A provider that creates a downgularFileTools object, with methods related with file manipulation
  * The provider has the userPersistentMemory and setStorageQuota methods, to allow configuration
  * of storage properties
  */
-    .provider("FileTools", function FileToolsProvider(){
+    .provider("downgularFileTools", function downgularFileToolsProvider(){
 
     var storageType, storageQuota;
     if(window.cordova){
@@ -419,12 +419,12 @@ angular.module('downgularJS')
         };
 
 
-        var FileTools = {};
+        var downgularFileTools = {};
 
         var fileSystem = null;
 
 
-        FileTools.getFileSystemEntry = function(){
+        downgularFileTools.getFileSystemEntry = function(){
             var deferred = $q.defer();
             var promise = deferred.promise;
 
@@ -477,7 +477,7 @@ angular.module('downgularJS')
         /**
 	 * Public static method that deletes a file from system using its URI
 	 */
-        FileTools.deleteFileFromSystemGivenURI = function(fileURI, onSuccess, onFail){
+        downgularFileTools.deleteFileFromSystemGivenURI = function(fileURI, onSuccess, onFail){
             angular.element(document).ready(function (){
                 var failWithInfo = function(e){
                     var msg = fail(e);
@@ -503,7 +503,7 @@ angular.module('downgularJS')
         /**
 	 * Public static method that saves a binary file to disc
 	 */	
-        FileTools.saveBinaryToDisc = function(arrayBuffer, name, directory, onSuccess, onFail){
+        downgularFileTools.saveBinaryToDisc = function(arrayBuffer, name, directory, onSuccess, onFail){
             /////////////////////////
             // save to disk method //
             /////////////////////////
@@ -541,7 +541,7 @@ angular.module('downgularJS')
 
                 //start running the save code
 
-                FileTools.getFileSystemEntry().then(function(fileSystem){
+                downgularFileTools.getFileSystemEntry().then(function(fileSystem){
                     try{
                         fileSystem.getDirectory(directory, {create : true, exclusive: false}, getDirectorySuccess, failWithInfo);
                     }
@@ -557,9 +557,9 @@ angular.module('downgularJS')
         /**
 	 * Public static method that check if a directory exists, and otherwise tries to create it
 	 */
-        FileTools.checkOrCreateDirectory = function(directory, onSuccess, onFail){
+        downgularFileTools.checkOrCreateDirectory = function(directory, onSuccess, onFail){
 
-            FileTools.getFileSystemEntry().then(function(fileSystem){
+            downgularFileTools.getFileSystemEntry().then(function(fileSystem){
                 try{
                     fileSystem.getDirectory(directory, {create : true, exclusive: false}, onSuccess, onFail);
                 }
@@ -573,7 +573,7 @@ angular.module('downgularJS')
         /**
 	 * Public static method that gets a file in blob format from system using its URI
 	 */
-        FileTools.getFileFromSystemGivenURI = function(fileURI, onSuccess, onFail){
+        downgularFileTools.getFileFromSystemGivenURI = function(fileURI, onSuccess, onFail){
             angular.element(document).ready(function (){
                 var failWithInfo = function(e){
                     var msg = fail(e);
@@ -620,7 +620,7 @@ angular.module('downgularJS')
 
 
 
-        return FileTools;
+        return downgularFileTools;
 
     }];
 });
@@ -629,18 +629,18 @@ angular.module('downgularJS')
 
 
 /**
- * A service that return a GenericTools object
+ * A service that return a downgularGenericTools object
  */
-    .factory('GenericTools', ['FileTools', function(FileTools) {
+    .factory('downgularGenericTools', ['downgularFileTools', function(downgularFileTools) {
 
-        var GenericTools = {};
+        var downgularGenericTools = {};
 
-        GenericTools.onlyCharsSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        downgularGenericTools.onlyCharsSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
         /**
 	 * Public static method that creates a random alphanumeric string
 	 */
-        GenericTools.randomAlphaNumericString = function(length, charSet) {
+        downgularGenericTools.randomAlphaNumericString = function(length, charSet) {
             var result = [];
 
             length = length || 10;
@@ -657,7 +657,7 @@ angular.module('downgularJS')
         /**
 	 * Public static method that returns an available filename to write in the expected directory
 	 */
-        GenericTools.getValidFilenameInDir = function(dir, length, extension, onSuccess, onFail){
+        downgularGenericTools.getValidFilenameInDir = function(dir, length, extension, onSuccess, onFail){
 
             //internal methods definition
 
@@ -679,7 +679,7 @@ angular.module('downgularJS')
                 var valid = false;
                 var name;
                 while(!valid){
-                    name = GenericTools.randomAlphaNumericString(length) + extension;
+                    name = downgularGenericTools.randomAlphaNumericString(length) + extension;
                     if(!fileNames[name]){
                         valid = true;
                     }
@@ -698,7 +698,7 @@ angular.module('downgularJS')
             }
 
             //code to execute
-            FileTools.getFileSystemEntry().then(function(fileSystem){
+            downgularFileTools.getFileSystemEntry().then(function(fileSystem){
                 //try to access dir
                 try{
                     fileSystem.getDirectory(dir, {create : true}, getDirectorySuccess, fail);
@@ -712,7 +712,7 @@ angular.module('downgularJS')
 
 
 
-        return GenericTools;
+        return downgularGenericTools;
 
     }]);
 
@@ -720,9 +720,9 @@ angular.module('downgularJS')
 
 
 /**
- * A service that return FileDownload objects
+ * A service that return downgularFileDownload objects
  */
-.factory('MIMEType', function () {
+.factory('downgularMIMEType', function () {
 
 var types = {
     'text/html':                             'html',
@@ -790,9 +790,9 @@ var types = {
     'video/mp4':                             'mp4'
 	};
 
-	var MIMETypes = {};
+	var downgularMIMETypes = {};
 
-	MIMETypes.getExtensionFromType = function(type){
+	downgularMIMETypes.getExtensionFromType = function(type){
 		var extension = types[type];
 		if(extension === undefined)
 			return "";
@@ -800,7 +800,7 @@ var types = {
 			return "."+extension;
 	};
 
-	MIMETypes.getTypeFromExtension = function(ext){
+	downgularMIMETypes.getTypeFromExtension = function(ext){
 		for(var key in types){
 			if(types[key] === ext)
 				return key;
@@ -808,6 +808,6 @@ var types = {
 		return "unknown";
 	};
 
-	return MIMETypes;
+	return downgularMIMETypes;
 
  });

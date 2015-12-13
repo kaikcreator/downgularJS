@@ -17,11 +17,11 @@ angular.module('downgularJS')
 })
 
 /**
- * A service that handles an array of FileDownload objects
+ * A service that handles an array of downgularFileDownload objects
  */
-.factory('downgularQueue', ['$http', '$q', 'FileDownload', 'GenericTools', 'FileTools', 
-    'MIMEType', 'downgularJSQueueStatus', 'downgularJSError',
-    function($http, $q, FileDownload, GenericTools, FileTools, MIMEType, 
+.factory('downgularQueue', ['$http', '$q', 'downgularFileDownload', 'downgularGenericTools', 'downgularFileTools', 
+    'downgularMIMEType', 'downgularJSQueueStatus', 'downgularJSError',
+    function($http, $q, downgularFileDownload, downgularGenericTools, downgularFileTools, downgularMIMEType, 
         downgularJSQueueStatus, downgularJSError) {
 
     /**
@@ -107,7 +107,7 @@ angular.module('downgularJS')
     downgularQueue.prototype.storeFile = function(blobFile){
         
         //Get a valid filename, and on success, save file to disc
-        var extension = MIMEType.getExtensionFromType(blobFile.type);
+        var extension = downgularMIMEType.getExtensionFromType(blobFile.type);
 
         if(!extension){
             //an error has been produced with the downloaded data, unknown extension
@@ -119,18 +119,18 @@ angular.module('downgularJS')
         
         var onValidName = function(name){
             //if name is valid, save file to disc
-            FileTools.saveBinaryToDisc(blobFile, name, this.directory, this.storeSuccesful.bind(this), this.errorStoring.bind(this));
+            downgularFileTools.saveBinaryToDisc(blobFile, name, this.directory, this.storeSuccesful.bind(this), this.errorStoring.bind(this));
         };
         
         var onNameError = function(error){
             console.log("error getting file filename: " + error);
             //create an emergency name
             var name = Date.now().toString() + extension;
-            FileTools.saveBinaryToDisc(blobFile, name, this.directory, this.storeSuccesful.bind(this), this.errorStoring.bind(this));
+            downgularFileTools.saveBinaryToDisc(blobFile, name, this.directory, this.storeSuccesful.bind(this), this.errorStoring.bind(this));
         };
         
         //try to get a valid filename in the current directory
-        GenericTools.getValidFilenameInDir(this.directory, 12, extension, onValidName.bind(this), onNameError.bind(this));
+        downgularGenericTools.getValidFilenameInDir(this.directory, 12, extension, onValidName.bind(this), onNameError.bind(this));
     };
  
     /** method to retry download, you probably won't use this method directly */   
@@ -182,7 +182,7 @@ angular.module('downgularJS')
     /** Public method to add a file to the download queue */
     downgularQueue.prototype.addFileDownload = function(info, url, fileUrl){
         if(url !== null && url !== "")
-            this.downloadsArray.push(FileDownload.build({info:info, url:url, fileUrl:fileUrl}));
+            this.downloadsArray.push(downgularFileDownload.build({info:info, url:url, fileUrl:fileUrl}));
         
         //check if queue is started but not running, in which case, schedule next file to donwload
         if(this.isStarted()){
@@ -195,7 +195,7 @@ angular.module('downgularJS')
     downgularQueue.prototype.addPriorityFileDownload = function(info, url, fileUrl){
         if(url !== null && url !== "")
             //set the file in the position 1 of the array (in case size = 0, splice puts it at pos 0)
-            this.downloadsArray.splice(1, 0, FileDownload.build({info:info, url:url, fileUrl:fileUrl}));
+            this.downloadsArray.splice(1, 0, downgularFileDownload.build({info:info, url:url, fileUrl:fileUrl}));
         
         //check if queue is started but not running, in which case, schedule next file to donwload
         if(this.isStarted()){
@@ -231,7 +231,7 @@ angular.module('downgularJS')
         this.downloadsArray = window.localStorage[this.queueName + 'Queue'];
         if(this.downloadsArray){
             this.downloadsArray = angular.fromJson(this.downloadsArray);
-            this.downloadsArray = FileDownload.localStorageRetrieverTransformer(this.downloadsArray); 
+            this.downloadsArray = downgularFileDownload.localStorageRetrieverTransformer(this.downloadsArray); 
         }
         else
             this.downloadsArray = [];
@@ -264,7 +264,7 @@ angular.module('downgularJS')
 	 */
 	downgularQueue.build = function(name, directory, onSuccess) {
         //try to create directory if it does not exists
-        FileTools.checkOrCreateDirectory(directory, null, function(err){
+        downgularFileTools.checkOrCreateDirectory(directory, null, function(err){
             console.log("Error creating directory " + directory + ", error: " + err);
         });
 		return new downgularQueue(name, directory, onSuccess);

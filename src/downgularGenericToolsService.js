@@ -2,18 +2,18 @@ angular.module('downgularJS')
 
 
 /**
- * A service that return a GenericTools object
+ * A service that return a downgularGenericTools object
  */
-    .factory('GenericTools', ['FileTools', function(FileTools) {
+    .factory('downgularGenericTools', ['downgularFileTools', function(downgularFileTools) {
 
-        var GenericTools = {};
+        var downgularGenericTools = {};
 
-        GenericTools.onlyCharsSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        downgularGenericTools.onlyCharsSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
         /**
 	 * Public static method that creates a random alphanumeric string
 	 */
-        GenericTools.randomAlphaNumericString = function(length, charSet) {
+        downgularGenericTools.randomAlphaNumericString = function(length, charSet) {
             var result = [];
 
             length = length || 10;
@@ -30,7 +30,7 @@ angular.module('downgularJS')
         /**
 	 * Public static method that returns an available filename to write in the expected directory
 	 */
-        GenericTools.getValidFilenameInDir = function(dir, length, extension, onSuccess, onFail){
+        downgularGenericTools.getValidFilenameInDir = function(dir, length, extension, onSuccess, onFail){
 
             //internal methods definition
 
@@ -52,7 +52,7 @@ angular.module('downgularJS')
                 var valid = false;
                 var name;
                 while(!valid){
-                    name = GenericTools.randomAlphaNumericString(length) + extension;
+                    name = downgularGenericTools.randomAlphaNumericString(length) + extension;
                     if(!fileNames[name]){
                         valid = true;
                     }
@@ -71,7 +71,7 @@ angular.module('downgularJS')
             }
 
             //code to execute
-            FileTools.getFileSystemEntry().then(function(fileSystem){
+            downgularFileTools.getFileSystemEntry().then(function(fileSystem){
                 //try to access dir
                 try{
                     fileSystem.getDirectory(dir, {create : true}, getDirectorySuccess, fail);
@@ -85,6 +85,6 @@ angular.module('downgularJS')
 
 
 
-        return GenericTools;
+        return downgularGenericTools;
 
     }]);

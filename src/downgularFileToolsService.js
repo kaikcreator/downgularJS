@@ -2,11 +2,11 @@ angular.module('downgularJS')
 
 
 /**
- * A provider that creates a FileTools object, with methods related with file manipulation
+ * A provider that creates a downgularFileTools object, with methods related with file manipulation
  * The provider has the userPersistentMemory and setStorageQuota methods, to allow configuration
  * of storage properties
  */
-    .provider("FileTools", function FileToolsProvider(){
+    .provider("downgularFileTools", function downgularFileToolsProvider(){
 
     var storageType, storageQuota;
     if(window.cordova){
@@ -80,12 +80,12 @@ angular.module('downgularJS')
         };
 
 
-        var FileTools = {};
+        var downgularFileTools = {};
 
         var fileSystem = null;
 
 
-        FileTools.getFileSystemEntry = function(){
+        downgularFileTools.getFileSystemEntry = function(){
             var deferred = $q.defer();
             var promise = deferred.promise;
 
@@ -138,7 +138,7 @@ angular.module('downgularJS')
         /**
 	 * Public static method that deletes a file from system using its URI
 	 */
-        FileTools.deleteFileFromSystemGivenURI = function(fileURI, onSuccess, onFail){
+        downgularFileTools.deleteFileFromSystemGivenURI = function(fileURI, onSuccess, onFail){
             angular.element(document).ready(function (){
                 var failWithInfo = function(e){
                     var msg = fail(e);
@@ -164,7 +164,7 @@ angular.module('downgularJS')
         /**
 	 * Public static method that saves a binary file to disc
 	 */	
-        FileTools.saveBinaryToDisc = function(arrayBuffer, name, directory, onSuccess, onFail){
+        downgularFileTools.saveBinaryToDisc = function(arrayBuffer, name, directory, onSuccess, onFail){
             /////////////////////////
             // save to disk method //
             /////////////////////////
@@ -202,7 +202,7 @@ angular.module('downgularJS')
 
                 //start running the save code
 
-                FileTools.getFileSystemEntry().then(function(fileSystem){
+                downgularFileTools.getFileSystemEntry().then(function(fileSystem){
                     try{
                         fileSystem.getDirectory(directory, {create : true, exclusive: false}, getDirectorySuccess, failWithInfo);
                     }
@@ -218,9 +218,9 @@ angular.module('downgularJS')
         /**
 	 * Public static method that check if a directory exists, and otherwise tries to create it
 	 */
-        FileTools.checkOrCreateDirectory = function(directory, onSuccess, onFail){
+        downgularFileTools.checkOrCreateDirectory = function(directory, onSuccess, onFail){
 
-            FileTools.getFileSystemEntry().then(function(fileSystem){
+            downgularFileTools.getFileSystemEntry().then(function(fileSystem){
                 try{
                     fileSystem.getDirectory(directory, {create : true, exclusive: false}, onSuccess, onFail);
                 }
@@ -234,7 +234,7 @@ angular.module('downgularJS')
         /**
 	 * Public static method that gets a file in blob format from system using its URI
 	 */
-        FileTools.getFileFromSystemGivenURI = function(fileURI, onSuccess, onFail){
+        downgularFileTools.getFileFromSystemGivenURI = function(fileURI, onSuccess, onFail){
             angular.element(document).ready(function (){
                 var failWithInfo = function(e){
                     var msg = fail(e);
@@ -281,7 +281,7 @@ angular.module('downgularJS')
 
 
 
-        return FileTools;
+        return downgularFileTools;
 
     }];
 });
