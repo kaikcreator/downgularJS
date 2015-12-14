@@ -1,9 +1,11 @@
 # downgularJS
-Angular library for downloading files and storing them locally.
+AngularJS library for downloading files and storing them locally. 
 
-Only Cordova and Chrome have, right now, FileSystem API, so this library is mainly focused in hybrid apps, that can need to download images or other files to the device and store them permantently.
+It's very simple to use: Just create a queue and add to it the urls of the files you want to download into that queue. You can start/stop the download process, and save/retrieve the queue in localStorage.
 
-As it follows AngularJS architecture, it can be easily integrated with **Ionic Framework**.
+Only Google Chrome and Cordova/Phonegap (requires [official File Plugin](https://github.com/apache/cordova-plugin-file)) have right now implemented a FileSystem API, so this library is mainly focused on Chrome Extensions and Hybrid Apps, that can need to download images or other files to the device and store them permantently.
+
+As it is an AngularJS module, it can be easily integrated with **Ionic Framework**.
 
 
 **Happy coding!!**
