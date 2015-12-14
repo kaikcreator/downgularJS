@@ -117,7 +117,7 @@ So you can use the **info** property to add whatever metadata you want to that f
 
 
 
-# Configure localStorage for downgularJS:
+# Configure file storage for downgularJS:
 By default, downgular sets temporary storage and zero quota (as quota is not required for temp. allocation).
 
 However, you can easily use **downgularFileToolsProvider** to request persistent memory and change the storage quota.
@@ -137,7 +137,7 @@ Just do the following in the config call of your module:
 # Example
 In the example folder you'll find a simple demonstration of how to:
 
-* configure localStorage for downloadJS
+* configure file storage for downloadJS
 * load a list of files to download in a download queue
 * start/stop the downloads
 * save/retrieve queues persistently
