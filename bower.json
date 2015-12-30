@@ -1,0 +1,31 @@
+{
+  "name": "downgularjs",
+  "description": "Angular Library for downloading files and storing them locally",
+  "main": "dist/downgular.js",
+  "authors": [
+    "Enrique Oriol"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "angularJS",
+    "downloads",
+    "download",
+    "files",
+    "downloader",
+    "filesystem"
+  ],
+  "homepage": "http://downgularjs.enriqueoriol.com",
+  "moduleType": [
+    "globals"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "gulpfile.js",
+    "package.json",
+    "src"
+  ]
+}
