@@ -11,6 +11,17 @@ As it is an AngularJS module, it can be easily integrated with **Ionic Framework
 **Happy coding!!**
 
 
+#Install
+You can install this package with bower.
+
+1. From terminal, in your project's folder:
+>$ **bower install downgularJS**
+
+2. Add the downgular.js file into your html:
+```
+<script src="bower_components/downgularjs/dist/downgular.js"></script>
+```
+
 
 # How it works
 
