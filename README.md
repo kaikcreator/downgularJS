@@ -18,9 +18,11 @@ You can install this package with bower.
 >$ **bower install downgularJS**
 
 2. Add the downgular.js file into your html:
-```
+
+```html
 <script src="bower_components/downgularjs/dist/downgular.js"></script>
 ```
+
 
 
 # How it works
