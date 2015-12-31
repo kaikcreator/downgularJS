@@ -24,6 +24,12 @@ You can install this package with bower.
 ```
 
 
+>TIP: In case you are planning to use it with cordova, you'll need to install File System Plugin
+
+```html
+cordova plugin add org.apache.cordova.file
+
+
 
 # How it works
 
