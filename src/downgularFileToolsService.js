@@ -6,14 +6,18 @@ angular.module('downgularJS')
  * The provider has the userPersistentMemory and setStorageQuota methods, to allow configuration
  * of storage properties
  */
-    .provider("downgularFileTools", function downgularFileToolsProvider(){
+
+    .constant("DowngularFileSystem", {
+        TEMPORARY: 0,
+        PERSISTENT: 1
+    })
+
+    .provider("downgularFileTools", ['DowngularFileSystem', function downgularFileToolsProvider(DowngularFileSystem){
 
     var storageType, storageQuota;
     if(window.cordova){
-        window.addEventListener("deviceready", function() { 
-            storageType = LocalFileSystem.TEMPORARY;
-            storageQuota = 0;
-        });
+        storageType = DowngularFileSystem.TEMPORARY;
+        storageQuota = 0;
     }
     else{
         storageType = window.TEMPORARY;
@@ -23,7 +27,7 @@ angular.module('downgularJS')
     this.usePersistentMemory = function(permanent){
         if(permanent === true){
             if(window.cordova){
-                storageType = LocalFileSystem.PERSISTENT;
+                storageType = DowngularFileSystem.PERSISTENT;
             }
             else{
                 storageType = window.PERSISTENT;
@@ -31,7 +35,7 @@ angular.module('downgularJS')
         }
         else{
             if(window.cordova){
-                storageType = LocalFileSystem.TEMPORARY;
+                storageType = DowngularFileSystem.TEMPORARY;
             }
             else{
                 storageType = window.TEMPORARY;
@@ -286,4 +290,4 @@ angular.module('downgularJS')
         return downgularFileTools;
 
     }];
-});
+}]);
