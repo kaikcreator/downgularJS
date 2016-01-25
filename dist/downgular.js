@@ -457,7 +457,6 @@ angular.module('downgularJS')
                     else{
                         //if the app is running in browser, request storage quota and init for chrome (is the only one that provides FileSystem API)
                         console.log("init persistent file system in navigator");
-                        $window.resolveLocalFileSystemURI = $window.resolveLocalFileSystemURL || $window.webkitResolveLocalFileSystemURL;
                         $window.requestFileSystem  = $window.webkitRequestFileSystem;  
                         if(storageType === $window.TEMPORARY)
                             $window.requestFileSystem(storageType, storageQuota, fileSystemSuccess, fileSystemFail);
@@ -624,6 +623,9 @@ angular.module('downgularJS')
             });
         };
 
+
+        //get resolve local filesystem URI function
+        $window.resolveLocalFileSystemURI = $window.resolveLocalFileSystemURL || $window.webkitResolveLocalFileSystemURL;
 
 
         return downgularFileTools;
